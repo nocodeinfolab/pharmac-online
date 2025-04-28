@@ -308,7 +308,7 @@
 <body>
     <header>
         <div class="header-content">
-            <div class="logo">Pharmac-Online</div>
+            <div class="logo">PharmaEasy</div>
             <div class="cart-icon">
                 <i class="fas fa-shopping-cart"></i>
                 <span class="cart-count">0</span>
@@ -402,15 +402,26 @@
         // Initialize the app
         document.addEventListener('DOMContentLoaded', fetchProducts);
 
-        // Functions
         async function fetchProducts() {
             try {
+                console.log("Attempting to fetch products...");
+                
                 const querySnapshot = await db.collection('Products')
                     .where('stock', '==', 'Available')
                     .get();
                 
+                console.log(`Found ${querySnapshot.size} products`);
+                
+                if (querySnapshot.empty) {
+                    console.warn("No available products found. Check if:");
+                    console.warn("- Your Products collection exists");
+                    console.warn("- Any documents have stock='Available'");
+                    console.warn("- Your Firestore rules allow reading");
+                }
+                
                 allProducts = querySnapshot.docs.map(doc => {
                     const data = doc.data();
+                    console.log("Product data:", data); // Log each product
                     return {
                         id: doc.id,
                         ...data,
