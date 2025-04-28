@@ -404,38 +404,49 @@
 
         async function fetchProducts() {
             try {
-                console.log("Attempting to fetch products...");
+                console.log("Fetching products from Firestore...");
                 
+                // First try to get ANY product to verify connection
+                const testQuery = await db.collection("Products").limit(1).get();
+                console.log(`Test query found ${testQuery.size} products`);
+                
+                if (testQuery.empty) {
+                    console.error("No products found at all. Check:");
+                    console.error("1. Collection name is exactly 'Products'");
+                    console.error("2. Rules allow reading (see above)");
+                    console.error("3. Collection exists in Firestore");
+                    return;
+                }
+
+                // Now try the actual availability query
                 const querySnapshot = await db.collection('Products')
                     .where('stock', '==', 'Available')
                     .get();
-                
-                console.log(`Found ${querySnapshot.size} products`);
+                    
+                console.log(`Availability query found ${querySnapshot.size} products`);
                 
                 if (querySnapshot.empty) {
-                    console.warn("No available products found. Check if:");
-                    console.warn("- Your Products collection exists");
-                    console.warn("- Any documents have stock='Available'");
-                    console.warn("- Your Firestore rules allow reading");
+                    // Show the first product to help debug stock field
+                    const sampleProduct = testQuery.docs[0].data();
+                    console.warn("Sample product structure:", sampleProduct);
+                    console.warn("Note: Looking for stock='Available' but found:", sampleProduct.stock);
                 }
-                
-                allProducts = querySnapshot.docs.map(doc => {
-                    const data = doc.data();
-                    console.log("Product data:", data); // Log each product
-                    return {
-                        id: doc.id,
-                        ...data,
-                        category: data.category || 'Other',
-                        tags: data.tags || []
-                    };
-                });
+
+                allProducts = querySnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data(),
+                    category: doc.data().category || 'Other',
+                    tags: doc.data().tags || []
+                }));
 
                 displayProductsByCategory(allProducts);
+                
             } catch (error) {
-                console.error("Error fetching products: ", error);
+                console.error("Firestore error:", error);
+                console.error("Full error details:", JSON.stringify(error, null, 2));
                 categoriesContainer.innerHTML = `
                     <div class="no-results">
-                        <p>Failed to load products. Please try again later.</p>
+                        <p>Database error. Check console for details.</p>
                     </div>
                 `;
             }
