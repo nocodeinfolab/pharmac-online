@@ -308,7 +308,7 @@
 <body>
     <header>
         <div class="header-content">
-            <div class="logo">PharmaEasy</div>
+            <div class="logo">Pharmac-Online</div>
             <div class="cart-icon">
                 <i class="fas fa-shopping-cart"></i>
                 <span class="cart-count">0</span>
@@ -366,6 +366,7 @@
             appId: "1:968868548902:android:0607bd63857c7c538131e7"
         };
 
+
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
@@ -402,51 +403,29 @@
         // Initialize the app
         document.addEventListener('DOMContentLoaded', fetchProducts);
 
+        // Functions
         async function fetchProducts() {
             try {
-                console.log("Fetching products from Firestore...");
-                
-                // First try to get ANY product to verify connection
-                const testQuery = await db.collection("Products").limit(1).get();
-                console.log(`Test query found ${testQuery.size} products`);
-                
-                if (testQuery.empty) {
-                    console.error("No products found at all. Check:");
-                    console.error("1. Collection name is exactly 'Products'");
-                    console.error("2. Rules allow reading (see above)");
-                    console.error("3. Collection exists in Firestore");
-                    return;
-                }
-
-                // Now try the actual availability query
                 const querySnapshot = await db.collection('Products')
                     .where('stock', '==', 'Available')
                     .get();
-                    
-                console.log(`Availability query found ${querySnapshot.size} products`);
                 
-                if (querySnapshot.empty) {
-                    // Show the first product to help debug stock field
-                    const sampleProduct = testQuery.docs[0].data();
-                    console.warn("Sample product structure:", sampleProduct);
-                    console.warn("Note: Looking for stock='Available' but found:", sampleProduct.stock);
-                }
-
-                allProducts = querySnapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data(),
-                    category: doc.data().category || 'Other',
-                    tags: doc.data().tags || []
-                }));
+                allProducts = querySnapshot.docs.map(doc => {
+                    const data = doc.data();
+                    return {
+                        id: doc.id,
+                        ...data,
+                        category: data.category || 'Other',
+                        tags: data.tags || []
+                    };
+                });
 
                 displayProductsByCategory(allProducts);
-                
             } catch (error) {
-                console.error("Firestore error:", error);
-                console.error("Full error details:", JSON.stringify(error, null, 2));
+                console.error("Error fetching products: ", error);
                 categoriesContainer.innerHTML = `
                     <div class="no-results">
-                        <p>Database error. Check console for details.</p>
+                        <p>Failed to load products. Please try again later.</p>
                     </div>
                 `;
             }
