@@ -168,8 +168,8 @@
 
         .products-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
         }
 
         .product-card {
@@ -178,6 +178,9 @@
             overflow: hidden;
             box-shadow: var(--shadow);
             transition: transform 0.2s;
+            width: 100%;
+            max-width: 120px;
+            margin: 0 auto;
         }
 
         .product-card:active {
@@ -186,7 +189,7 @@
 
         .product-image {
             width: 100%;
-            height: 120px;
+            height: 80px;
             object-fit: contain;
             background: var(--light-bg);
             padding: 10px;
@@ -194,63 +197,66 @@
         }
 
         .product-info {
-            padding: 10px;
+            padding: 8px;
+            font-size: 0.8rem;
         }
 
         .product-name {
-            font-size: 0.9rem;
+            font-size: 0.75rem;
             font-weight: 500;
-            margin-bottom: 5px;
+            margin-bottom: 3px;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
+            min-height: 2.4em;
         }
 
         .product-brand {
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             color: var(--light-text);
-            margin-bottom: 5px;
+            margin-bottom: 3px;
         }
 
         .product-price {
-            font-size: 1rem;
+            font-size: 0.8rem;
             font-weight: 700;
             color: var(--primary);
-            margin-bottom: 5px;
+            margin-bottom: 3px;
         }
 
         .product-stock {
-            font-size: 0.7rem;
-            padding: 3px 6px;
-            border-radius: 4px;
+            font-size: 0.6rem;
+            padding: 2px 4px;
+            border-radius: 3px;
             background: var(--success);
             color: var(--white);
             display: inline-block;
         }
 
         .prescription-badge {
-            font-size: 0.7rem;
-            padding: 3px 6px;
-            border-radius: 4px;
+            font-size: 0.6rem;
+            padding: 2px 4px;
+            border-radius: 3px;
             background: var(--warning);
             color: var(--white);
             display: inline-block;
-            margin-left: 5px;
+            margin-left: 3px;
         }
 
         .add-to-cart-container {
             display: flex;
-            margin-top: 10px;
-            gap: 5px;
+            margin-top: 5px;
+            gap: 3px;
         }
 
         .quantity-input {
-            flex: 1;
-            padding: 8px;
+            width: 40px;
+            padding: 4px;
             border: 1px solid var(--accent);
             border-radius: var(--radius);
-            font-size: 0.9rem;
+            font-size: 0.7rem;
+            text-align: center;
         }
 
         .add-to-cart-btn {
@@ -258,10 +264,12 @@
             color: var(--white);
             border: none;
             border-radius: var(--radius);
-            padding: 8px 12px;
-            font-size: 0.9rem;
+            padding: 4px 6px;
+            font-size: 0.7rem;
             cursor: pointer;
             transition: background 0.3s;
+            flex-grow: 1;
+            white-space: nowrap;
         }
 
         .add-to-cart-btn:active {
@@ -271,13 +279,14 @@
         .see-more-btn {
             display: block;
             width: 100%;
-            padding: 10px;
-            margin-top: 10px;
+            padding: 8px;
+            margin-top: 8px;
             background: var(--accent);
             border: none;
             border-radius: var(--radius);
             color: var(--primary);
             font-weight: 500;
+            font-size: 0.8rem;
             cursor: pointer;
             transition: background 0.3s;
         }
@@ -311,7 +320,7 @@
             text-align: center;
             padding: 30px;
             color: var(--light-text);
-            grid-column: span 2;
+            grid-column: span 3;
         }
 
         footer {
@@ -330,12 +339,12 @@
             flex-direction: column;
             align-items: center;
             color: var(--light-text);
-            font-size: 0.8rem;
+            font-size: 0.7rem;
         }
 
         .footer-icon i {
-            font-size: 1.2rem;
-            margin-bottom: 3px;
+            font-size: 1.1rem;
+            margin-bottom: 2px;
         }
 
         .footer-icon.active {
@@ -401,14 +410,14 @@
 
     <script>
         try {
-            // Firebase configuration - REPLACE WITH YOUR CONFIG
+            // Firebase configuration
             const firebaseConfig = {
                 apiKey: "AIzaSyCNMdcbXVMC_QUgVSmgFMXlW84DWQs9QZE",
                 authDomain: "pharmac-online.firebaseapp.com",
                 projectId: "pharmac-online",
                 storageBucket: "pharmac-online.appspot.com",
                 messagingSenderId: "968868548902",
-                appId: "1:968868548902:web:0607bd63857c7c538131e7" // Must be web config
+                appId: "1:968868548902:web:0607bd63857c7c538131e7"
             };
 
             // Initialize Firebase
@@ -434,6 +443,36 @@
             function getEmailFromURL() {
                 const urlParams = new URLSearchParams(window.location.search);
                 return urlParams.get('email') || '';
+            }
+
+            // Get cart count for user
+            async function getCartCount() {
+                if (!userEmail) return 0;
+                
+                try {
+                    const cartQuery = await db.collection('Cart')
+                        .where('email_address', '==', userEmail)
+                        .limit(1)
+                        .get();
+                    
+                    if (cartQuery.empty) return 0;
+                    
+                    const cartDoc = cartQuery.docs[0];
+                    const itemsSnapshot = await cartDoc.ref.collection('Items')
+                        .where('status', '==', 'Active')
+                        .get();
+                    
+                    return itemsSnapshot.size;
+                } catch (error) {
+                    console.error('Error getting cart count:', error);
+                    return 0;
+                }
+            }
+
+            // Update cart count display
+            async function updateCartCount() {
+                cartCount = await getCartCount();
+                cartCountElement.textContent = cartCount;
             }
 
             // Event listeners
@@ -466,6 +505,11 @@
                     return;
                 }
                 console.log("User email:", userEmail);
+                
+                // Update cart count immediately
+                await updateCartCount();
+                
+                // Then fetch products
                 await fetchProducts();
                 setupServiceWorker();
             }
@@ -540,8 +584,8 @@
                     const productsGrid = document.createElement('div');
                     productsGrid.className = 'products-grid';
                     
-                    // Display first 10 products
-                    const visibleProducts = categoryProducts.slice(0, 10);
+                    // Display first 9 products (3x3 grid)
+                    const visibleProducts = categoryProducts.slice(0, 9);
                     visibleProducts.forEach(product => {
                         productsGrid.appendChild(createProductCard(product));
                     });
@@ -550,24 +594,24 @@
                     categorySection.appendChild(productsGrid);
                     
                     // Add "See More" button if there are more products
-                    if (categoryProducts.length > 10) {
+                    if (categoryProducts.length > 9) {
                         const seeMoreBtn = document.createElement('button');
                         seeMoreBtn.className = 'see-more-btn';
                         seeMoreBtn.textContent = 'See More';
                         seeMoreBtn.dataset.category = category;
-                        seeMoreBtn.dataset.offset = 10;
+                        seeMoreBtn.dataset.offset = 9;
                         
                         seeMoreBtn.addEventListener('click', function() {
                             const offset = parseInt(this.dataset.offset);
-                            const nextProducts = categoryProducts.slice(offset, offset + 10);
+                            const nextProducts = categoryProducts.slice(offset, offset + 9);
                             
                             nextProducts.forEach(product => {
                                 productsGrid.appendChild(createProductCard(product));
                             });
                             
-                            this.dataset.offset = offset + 10;
+                            this.dataset.offset = offset + 9;
                             
-                            if (offset + 10 >= categoryProducts.length) {
+                            if (offset + 9 >= categoryProducts.length) {
                                 this.style.display = 'none';
                             }
                         });
@@ -604,7 +648,7 @@
                         ${product.prescriptionRequired ? '<span class="prescription-badge">Rx</span>' : ''}
                         <div class="add-to-cart-container">
                             <input type="number" class="quantity-input" min="1" value="1" placeholder="Qty">
-                            <button class="add-to-cart-btn">Add to Cart</button>
+                            <button class="add-to-cart-btn">Add</button>
                         </div>
                     </div>
                 `;
@@ -624,8 +668,7 @@
                     
                     try {
                         await addToCart(product, quantity);
-                        cartCount += quantity;
-                        cartCountElement.textContent = cartCount;
+                        await updateCartCount();
                         alert(`${quantity} ${product.productName} added to cart`);
                     } catch (error) {
                         console.error('Error adding to cart:', error);
@@ -648,10 +691,10 @@
                     .get();
                 
                 let cartRef;
+                const now = new Date();
                 
                 if (cartQuery.empty) {
                     // Create new cart document
-                    const now = new Date();
                     cartRef = await db.collection('Cart').add({
                         email_address: userEmail,
                         created_at: now,
@@ -659,17 +702,39 @@
                     });
                 } else {
                     cartRef = cartQuery.docs[0].ref;
+                    // Update the updated_at field
+                    await cartRef.update({
+                        updated_at: now
+                    });
                 }
                 
-                // Add product to cart subcollection
-                await cartRef.collection('Items').add({
-                    product_id: product.id,
-                    product_name: product.productName,
-                    price_per_unit: product.price || 0,
-                    quantity: quantity,
-                    status: 'Active',
-                    added_at: new Date()
-                });
+                // Check if product already exists in cart
+                const existingItemQuery = await cartRef.collection('Items')
+                    .where('product_id', '==', product.id)
+                    .where('status', '==', 'Active')
+                    .limit(1)
+                    .get();
+                
+                if (!existingItemQuery.empty) {
+                    // Update existing item
+                    const existingItem = existingItemQuery.docs[0];
+                    const currentQty = existingItem.data().quantity || 0;
+                    await existingItem.ref.update({
+                        quantity: currentQty + quantity,
+                        updated_at: now
+                    });
+                } else {
+                    // Add new item to cart
+                    await cartRef.collection('Items').add({
+                        product_id: product.id,
+                        product_name: product.productName,
+                        price_per_unit: product.price || 0,
+                        quantity: quantity,
+                        status: 'Active',
+                        created_at: now,
+                        updated_at: now
+                    });
+                }
             }
 
             function handleSearch() {
