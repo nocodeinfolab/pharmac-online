@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Online Pharmacy</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -22,12 +22,15 @@
             --light-bg: #f5f7fa;
             --radius: 8px;
             --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            --text-sharpness: antialiased;
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-font-smoothing: var(--text-sharpness);
+            -moz-osx-font-smoothing: grayscale;
         }
 
         body {
@@ -36,6 +39,8 @@
             color: var(--text);
             line-height: 1.6;
             padding-bottom: 60px;
+            image-rendering: -webkit-optimize-contrast;
+            text-rendering: optimizeLegibility;
         }
 
         header {
@@ -98,6 +103,7 @@
             padding: 12px 15px;
             border: none;
             font-size: 1rem;
+            background: var(--white);
         }
 
         .search-button {
@@ -184,6 +190,7 @@
             object-fit: contain;
             background: var(--light-bg);
             padding: 10px;
+            image-rendering: -webkit-optimize-contrast;
         }
 
         .product-info {
@@ -230,6 +237,35 @@
             color: var(--white);
             display: inline-block;
             margin-left: 5px;
+        }
+
+        .add-to-cart-container {
+            display: flex;
+            margin-top: 10px;
+            gap: 5px;
+        }
+
+        .quantity-input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid var(--accent);
+            border-radius: var(--radius);
+            font-size: 0.9rem;
+        }
+
+        .add-to-cart-btn {
+            background: var(--primary);
+            color: var(--white);
+            border: none;
+            border-radius: var(--radius);
+            padding: 8px 12px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .add-to-cart-btn:active {
+            background: #2a6bc4;
         }
 
         .see-more-btn {
@@ -386,11 +422,19 @@
             const searchInput = document.getElementById('search-input');
             const searchButton = document.getElementById('search-button');
             const searchTabs = document.querySelectorAll('.search-tab');
+            const cartCountElement = document.querySelector('.cart-count');
             let currentSearchType = 'name';
 
             // Global variables
             let allProducts = [];
             let cartCount = 0;
+            let userEmail = '';
+
+            // Get email parameter from URL
+            function getEmailFromURL() {
+                const urlParams = new URLSearchParams(window.location.search);
+                return urlParams.get('email') || '';
+            }
 
             // Event listeners
             searchButton.addEventListener('click', handleSearch);
@@ -416,6 +460,12 @@
             // Functions
             async function initApp() {
                 console.log("Initializing pharmacy app...");
+                userEmail = getEmailFromURL();
+                if (!userEmail) {
+                    showError("No email parameter found in URL. Please access this page with a valid email.");
+                    return;
+                }
+                console.log("User email:", userEmail);
                 await fetchProducts();
                 setupServiceWorker();
             }
@@ -424,7 +474,6 @@
                 try {
                     console.log("Fetching products from Firestore...");
                     
-                    // First get all products to debug
                     const allSnapshot = await db.collection('Products').get();
                     console.log(`Found ${allSnapshot.size} total products`);
                     
@@ -433,13 +482,6 @@
                         return;
                     }
 
-                    // Log sample product for debugging
-                    const sampleProduct = allSnapshot.docs[0].data();
-                    console.log("Sample product:", sampleProduct);
-                    console.log("Stock field type:", typeof sampleProduct.stock);
-                    console.log("Stock field value:", sampleProduct.stock);
-
-                    // Filter for available products
                     allProducts = allSnapshot.docs.map(doc => {
                         const data = doc.data();
                         return {
@@ -449,7 +491,6 @@
                             tags: data.tags || []
                         };
                     }).filter(product => {
-                        // Flexible stock status checking
                         const stockValue = String(product.stock).toLowerCase().trim();
                         return stockValue.includes('available') || 
                                stockValue.includes('in stock') ||
@@ -545,6 +586,11 @@
                 card.dataset.name = product.productName.toLowerCase();
                 card.dataset.tags = product.tags.join(',').toLowerCase();
                 
+                // Format price as Naira
+                const formattedPrice = product.price ? 
+                    `₦${product.price.toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2})}` : 
+                    '₦0.00';
+                
                 card.innerHTML = `
                     <img src="${product.imageUrl || 'https://via.placeholder.com/150?text=No+Image'}" 
                          alt="${product.productName}" 
@@ -553,18 +599,77 @@
                     <div class="product-info">
                         <h3 class="product-name">${product.productName}</h3>
                         <p class="product-brand">${product.brandName || 'Generic'}</p>
-                        <p class="product-price">$${product.price?.toFixed(2) || '0.00'}</p>
+                        <p class="product-price">${formattedPrice}</p>
                         <span class="product-stock">In Stock</span>
                         ${product.prescriptionRequired ? '<span class="prescription-badge">Rx</span>' : ''}
+                        <div class="add-to-cart-container">
+                            <input type="number" class="quantity-input" min="1" value="1" placeholder="Qty">
+                            <button class="add-to-cart-btn">Add to Cart</button>
+                        </div>
                     </div>
                 `;
                 
-                card.addEventListener('click', () => {
-                    // In a real app, navigate to product detail page
-                    alert(`Selected: ${product.productName}\nPrice: $${product.price?.toFixed(2) || '0.00'}`);
+                // Add to cart functionality
+                const addToCartBtn = card.querySelector('.add-to-cart-btn');
+                const quantityInput = card.querySelector('.quantity-input');
+                
+                addToCartBtn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    const quantity = parseInt(quantityInput.value) || 1;
+                    
+                    if (quantity < 1) {
+                        alert('Please enter a valid quantity');
+                        return;
+                    }
+                    
+                    try {
+                        await addToCart(product, quantity);
+                        cartCount += quantity;
+                        cartCountElement.textContent = cartCount;
+                        alert(`${quantity} ${product.productName} added to cart`);
+                    } catch (error) {
+                        console.error('Error adding to cart:', error);
+                        alert('Failed to add to cart. Please try again.');
+                    }
                 });
                 
                 return card;
+            }
+
+            async function addToCart(product, quantity) {
+                if (!userEmail) {
+                    throw new Error('No user email available');
+                }
+                
+                // Check if cart document exists for this user
+                const cartQuery = await db.collection('Cart')
+                    .where('email_address', '==', userEmail)
+                    .limit(1)
+                    .get();
+                
+                let cartRef;
+                
+                if (cartQuery.empty) {
+                    // Create new cart document
+                    const now = new Date();
+                    cartRef = await db.collection('Cart').add({
+                        email_address: userEmail,
+                        created_at: now,
+                        updated_at: now
+                    });
+                } else {
+                    cartRef = cartQuery.docs[0].ref;
+                }
+                
+                // Add product to cart subcollection
+                await cartRef.collection('Items').add({
+                    product_id: product.id,
+                    product_name: product.productName,
+                    price_per_unit: product.price || 0,
+                    quantity: quantity,
+                    status: 'Active',
+                    added_at: new Date()
+                });
             }
 
             function handleSearch() {
