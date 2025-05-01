@@ -67,6 +67,7 @@
         .cart-icon {
             position: relative;
             font-size: 1.3rem;
+            cursor: pointer;
         }
 
         .cart-count {
@@ -341,6 +342,7 @@
             align-items: center;
             color: var(--light-text);
             font-size: 0.7rem;
+            cursor: pointer;
         }
 
         .footer-icon i {
@@ -357,13 +359,165 @@
             padding: 20px;
             color: var(--danger);
         }
+
+        /* Cart Page Styles */
+        .cart-page {
+            display: none;
+            padding: 15px;
+        }
+
+        .cart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .cart-title {
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: var(--primary);
+        }
+
+        .close-cart {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: var(--light-text);
+            cursor: pointer;
+        }
+
+        .cart-items {
+            margin-bottom: 20px;
+        }
+
+        .cart-item {
+            display: flex;
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 10px;
+            margin-bottom: 10px;
+            box-shadow: var(--shadow);
+        }
+
+        .cart-item-image {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            margin-right: 10px;
+            background: var(--light-bg);
+        }
+
+        .cart-item-details {
+            flex: 1;
+        }
+
+        .cart-item-name {
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .cart-item-price {
+            font-size: 0.8rem;
+            color: var(--primary);
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .cart-item-quantity {
+            display: flex;
+            align-items: center;
+        }
+
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            margin-right: 10px;
+        }
+
+        .quantity-btn {
+            width: 25px;
+            height: 25px;
+            background: var(--accent);
+            border: none;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .quantity-value {
+            margin: 0 8px;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        .remove-item {
+            color: var(--danger);
+            font-size: 0.7rem;
+            cursor: pointer;
+        }
+
+        .cart-summary {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 15px;
+            box-shadow: var(--shadow);
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .summary-total {
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--primary);
+        }
+
+        .checkout-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: var(--white);
+            border: none;
+            border-radius: var(--radius);
+            font-weight: 500;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        .empty-cart {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--light-text);
+        }
+
+        .empty-cart i {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: var(--accent);
+        }
+
+        .back-to-shop {
+            color: var(--primary);
+            text-decoration: underline;
+            cursor: pointer;
+            margin-top: 10px;
+            display: inline-block;
+        }
     </style>
 </head>
 <body>
     <header>
         <div class="header-content">
             <div class="logo">Pharmac-Online</div>
-            <div class="cart-icon">
+            <div class="cart-icon" id="cart-icon">
                 <i class="fas fa-shopping-cart"></i>
                 <span class="cart-count">0</span>
             </div>
@@ -390,20 +544,50 @@
         </div>
     </div>
 
+    <!-- Cart Page -->
+    <div class="cart-page" id="cart-page">
+        <div class="cart-header">
+            <h2 class="cart-title">Your Cart</h2>
+            <button class="close-cart" id="close-cart">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="cart-items" id="cart-items">
+            <!-- Cart items will be loaded here -->
+        </div>
+        
+        <div class="cart-summary" id="cart-summary">
+            <div class="summary-row">
+                <span>Subtotal</span>
+                <span id="cart-subtotal">₦0.00</span>
+            </div>
+            <div class="summary-row">
+                <span>Delivery</span>
+                <span>₦0.00</span>
+            </div>
+            <div class="summary-row summary-total">
+                <span>Total</span>
+                <span id="cart-total">₦0.00</span>
+            </div>
+            <button class="checkout-btn">Proceed to Checkout</button>
+        </div>
+    </div>
+
     <footer>
-        <div class="footer-icon active">
+        <div class="footer-icon active" id="home-btn">
             <i class="fas fa-home"></i>
             <span>Home</span>
         </div>
-        <div class="footer-icon">
-            <i class="fas fa-search"></i>
-            <span>Search</span>
+        <div class="footer-icon" id="cart-btn">
+            <i class="fas fa-shopping-cart"></i>
+            <span>Cart</span>
         </div>
-        <div class="footer-icon">
+        <div class="footer-icon" id="prescription-btn">
             <i class="fas fa-prescription"></i>
             <span>Prescriptions</span>
         </div>
-        <div class="footer-icon">
+        <div class="footer-icon" id="account-btn">
             <i class="fas fa-user"></i>
             <span>Account</span>
         </div>
@@ -433,12 +617,21 @@
             const searchButton = document.getElementById('search-button');
             const searchTabs = document.querySelectorAll('.search-tab');
             const cartCountElement = document.querySelector('.cart-count');
+            const cartIcon = document.getElementById('cart-icon');
+            const cartPage = document.getElementById('cart-page');
+            const closeCart = document.getElementById('close-cart');
+            const cartItemsContainer = document.getElementById('cart-items');
+            const cartSubtotal = document.getElementById('cart-subtotal');
+            const cartTotal = document.getElementById('cart-total');
+            const cartBtn = document.getElementById('cart-btn');
+            const homeBtn = document.getElementById('home-btn');
             let currentSearchType = 'name';
 
             // Global variables
             let allProducts = [];
             let cartCount = 0;
             let userEmail = '';
+            let cartDocRef = null;
 
             // Get email parameter from URL
             function getEmailFromURL() {
@@ -458,8 +651,8 @@
                     
                     if (cartQuery.empty) return 0;
                     
-                    const cartDoc = cartQuery.docs[0];
-                    const itemsSnapshot = await cartDoc.ref.collection('Items')
+                    cartDocRef = cartQuery.docs[0].ref;
+                    const itemsSnapshot = await cartDocRef.collection('Items')
                         .where('status', '==', 'Active')
                         .get();
                     
@@ -492,6 +685,20 @@
                         : 'Search by tags like pain, fever...';
                     if (searchInput.value) handleSearch();
                 });
+            });
+
+            // Cart event listeners
+            cartIcon.addEventListener('click', openCart);
+            closeCart.addEventListener('click', closeCartPage);
+            cartBtn.addEventListener('click', openCart);
+            homeBtn.addEventListener('click', () => {
+                cartPage.style.display = 'none';
+                categoriesContainer.style.display = 'block';
+                searchContainer.style.display = 'block';
+                document.querySelectorAll('.footer-icon').forEach(icon => {
+                    icon.classList.remove('active');
+                });
+                homeBtn.classList.add('active');
             });
 
             // Initialize the app
@@ -701,8 +908,10 @@
                         created_at: now,
                         updated_at: now
                     });
+                    cartDocRef = cartRef;
                 } else {
                     cartRef = cartQuery.docs[0].ref;
+                    cartDocRef = cartRef;
                     // Update the updated_at field
                     await cartRef.update({
                         updated_at: now
@@ -733,7 +942,8 @@
                         quantity: quantity,
                         status: 'Active',
                         created_at: now,
-                        updated_at: now
+                        updated_at: now,
+                        image_url: product.imageUrl || ''
                     });
                 }
             }
@@ -783,7 +993,206 @@
                 }
             }
 
-        } catch (error) {
+            // Cart functions
+            async function openCart() {
+                if (!userEmail) {
+                    alert('Please login to view your cart');
+                    return;
+                }
+                
+                try {
+                    // Hide main content
+                    categoriesContainer.style.display = 'none';
+                    document.querySelector('.search-container').style.display = 'none';
+                    
+                    // Show cart page
+                    cartPage.style.display = 'block';
+                    
+                    // Update footer icons
+                    document.querySelectorAll('.footer-icon').forEach(icon => {
+                        icon.classList.remove('active');
+                    });
+                    cartBtn.classList.add('active');
+                    
+                    // Load cart items
+                    await loadCartItems();
+                } catch (error) {
+                    console.error('Error opening cart:', error);
+                    alert('Failed to load cart. Please try again.');
+                }
+            }
+
+            function closeCartPage() {
+                cartPage.style.display = 'none';
+                categoriesContainer.style.display = 'block';
+                document.querySelector('.search-container').style.display = 'block';
+                document.querySelectorAll('.footer-icon').forEach(icon => {
+                    icon.classList.remove('active');
+                });
+                homeBtn.classList.add('active');
+            }
+
+            async function loadCartItems() {
+                if (!userEmail || !cartDocRef) {
+                    const cartQuery = await db.collection('Cart')
+                        .where('email_address', '==', userEmail)
+                        .limit(1)
+                        .get();
+                    
+                    if (cartQuery.empty) {
+                        showEmptyCart();
+                        return;
+                    }
+                    
+                    cartDocRef = cartQuery.docs[0].ref;
+                }
+                
+                const itemsSnapshot = await cartDocRef.collection('Items')
+                    .where('status', '==', 'Active')
+                    .get();
+                
+                if (itemsSnapshot.empty) {
+                    showEmptyCart();
+                    return;
+                }
+                
+                let subtotal = 0;
+                cartItemsContainer.innerHTML = '';
+                
+                itemsSnapshot.forEach(async doc => {
+                    const item = doc.data();
+                    const product = allProducts.find(p => p.id === item.product_id) || {
+                        productName: item.product_name,
+                        price: item.price_per_unit,
+                        imageUrl: item.image_url || 'https://via.placeholder.com/150?text=No+Image'
+                    };
+                    
+                    const itemTotal = item.price_per_unit * item.quantity;
+                    subtotal += itemTotal;
+                    
+                    const formattedPrice = `₦${item.price_per_unit.toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                    const formattedTotal = `₦${itemTotal.toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                    
+                    const cartItem = document.createElement('div');
+                    cartItem.className = 'cart-item';
+                    cartItem.dataset.id = doc.id;
+                    cartItem.innerHTML = `
+                        <img src="${product.imageUrl}" alt="${product.productName}" class="cart-item-image">
+                        <div class="cart-item-details">
+                            <h3 class="cart-item-name">${product.productName}</h3>
+                            <p class="cart-item-price">${formattedPrice}</p>
+                            <div class="cart-item-quantity">
+                                <div class="quantity-control">
+                                    <button class="quantity-btn minus">-</button>
+                                    <span class="quantity-value">${item.quantity}</span>
+                                    <button class="quantity-btn plus">+</button>
+                                </div>
+                                <span class="remove-item">Remove</span>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Add event listeners for quantity controls
+                    const minusBtn = cartItem.querySelector('.minus');
+                    const plusBtn = cartItem.querySelector('.plus');
+                    const quantityValue = cartItem.querySelector('.quantity-value');
+                    const removeBtn = cartItem.querySelector('.remove-item');
+                    
+                    minusBtn.addEventListener('click', async () => {
+                        const newQty = parseInt(quantityValue.textContent) - 1;
+                        if (newQty > 0) {
+                            await updateCartItem(doc.id, newQty);
+                            quantityValue.textContent = newQty;
+                            await updateCartSummary();
+                        } else {
+                            await removeCartItem(doc.id);
+                            cartItem.remove();
+                            await updateCartSummary();
+                            await updateCartCount();
+                        }
+                    });
+                    
+                    plusBtn.addEventListener('click', async () => {
+                        const newQty = parseInt(quantityValue.textContent) + 1;
+                        await updateCartItem(doc.id, newQty);
+                        quantityValue.textContent = newQty;
+                        await updateCartSummary();
+                    });
+                    
+                    removeBtn.addEventListener('click', async () => {
+                        await removeCartItem(doc.id);
+                        cartItem.remove();
+                        await updateCartSummary();
+                        await updateCartCount();
+                        
+                        // Check if cart is now empty
+                        const updatedSnapshot = await cartDocRef.collection('Items')
+                            .where('status', '==', 'Active')
+                            .get();
+                        
+                        if (updatedSnapshot.empty) {
+                            showEmptyCart();
+                        }
+                    });
+                    
+                    cartItemsContainer.appendChild(cartItem);
+                });
+                
+                // Update summary
+                updateCartSummary(subtotal);
+            }
+
+            async function updateCartItem(itemId, newQuantity) {
+                await cartDocRef.collection('Items').doc(itemId).update({
+                    quantity: newQuantity,
+                    updated_at: new Date()
+                });
+            }
+
+            async function removeCartItem(itemId) {
+                await cartDocRef.collection('Items').doc(itemId).update({
+                    status: 'Removed',
+                    updated_at: new Date()
+                });
+            }
+
+            async function updateCartSummary(subtotal = null) {
+                if (subtotal === null) {
+                    // Recalculate subtotal if not provided
+                    subtotal = 0;
+                    const itemsSnapshot = await cartDocRef.collection('Items')
+                        .where('status', '==', 'Active')
+                        .get();
+                    
+                    itemsSnapshot.forEach(doc => {
+                        const item = doc.data();
+                        subtotal += item.price_per_unit * item.quantity;
+                    });
+                }
+                
+                const formattedSubtotal = `₦${subtotal.toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                const formattedTotal = `₦${subtotal.toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                
+                cartSubtotal.textContent = formattedSubtotal;
+                cartTotal.textContent = formattedTotal;
+            }
+
+            function showEmptyCart() {
+                cartItemsContainer.innerHTML = `
+                    <div class="empty-cart">
+                        <i class="fas fa-shopping-cart"></i>
+                        <p>Your cart is empty</p>
+                        <p class="back-to-shop" id="back-to-shop">Continue Shopping</p>
+                    </div>
+                `;
+                
+                document.getElementById('back-to-shop').addEventListener('click', closeCartPage);
+                
+                // Hide summary when cart is empty
+                document.getElementById('cart-summary').style.display = 'none';
+            }
+
+         } catch (error) {
             console.error("Fatal error in application:", error);
             document.getElementById('categories-container').innerHTML = `
                 <div class="error-message">
