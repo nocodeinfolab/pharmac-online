@@ -272,23 +272,55 @@
             transition: background 0.3s;
             flex-grow: 1;
             white-space: nowrap;
+            position: relative;
         }
 
-        .add-to-cart-btn:active {
+        .add-to-cart-btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .add-to-cart-btn .btn-text {
+            visibility: visible;
+        }
+
+        .add-to-cart-btn .spinner {
+            visibility: hidden;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 2px solid var(--white);
+            animation: spin 1s linear infinite;
+        }
+
+        .add-to-cart-btn.loading .btn-text {
+            visibility: hidden;
+        }
+
+        .add-to-cart-btn.loading .spinner {
+            visibility: visible;
+        }
+
+        .add-to-cart-btn:active:not(:disabled) {
             background: #2a6bc4;
         }
 
         .see-more-btn {
             display: block;
             width: 100%;
-            padding: 8px;
+            padding: 5px;
             margin-top: 8px;
             background: var(--accent);
             border: none;
             border-radius: var(--radius);
             color: var(--primary);
             font-weight: 500;
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             cursor: pointer;
             transition: background 0.3s;
         }
@@ -694,7 +726,7 @@
             homeBtn.addEventListener('click', () => {
                 cartPage.style.display = 'none';
                 categoriesContainer.style.display = 'block';
-                searchContainer.style.display = 'block';
+                document.querySelector('.search-container').style.display = 'block';
                 document.querySelectorAll('.footer-icon').forEach(icon => {
                     icon.classList.remove('active');
                 });
@@ -777,9 +809,13 @@
                     categories[product.category].push(product);
                 });
 
+                // Sort categories alphabetically
+                const sortedCategories = Object.keys(categories).sort();
+
                 // Display each category
                 categoriesContainer.innerHTML = '';
-                for (const [category, categoryProducts] of Object.entries(categories)) {
+                sortedCategories.forEach(category => {
+                    const categoryProducts = categories[category];
                     const categorySection = document.createElement('div');
                     categorySection.className = 'category-section';
                     
@@ -792,8 +828,8 @@
                     const productsGrid = document.createElement('div');
                     productsGrid.className = 'products-grid';
                     
-                    // Display first 9 products (3x3 grid)
-                    const visibleProducts = categoryProducts.slice(0, 9);
+                    // Display first 3 products by default
+                    const visibleProducts = categoryProducts.slice(0, 3);
                     visibleProducts.forEach(product => {
                         productsGrid.appendChild(createProductCard(product));
                     });
@@ -802,24 +838,27 @@
                     categorySection.appendChild(productsGrid);
                     
                     // Add "See More" button if there are more products
-                    if (categoryProducts.length > 9) {
+                    if (categoryProducts.length > 3) {
                         const seeMoreBtn = document.createElement('button');
                         seeMoreBtn.className = 'see-more-btn';
                         seeMoreBtn.textContent = 'See More';
                         seeMoreBtn.dataset.category = category;
-                        seeMoreBtn.dataset.offset = 9;
+                        seeMoreBtn.dataset.offset = 3;
+                        seeMoreBtn.dataset.visible = 3;
                         
                         seeMoreBtn.addEventListener('click', function() {
                             const offset = parseInt(this.dataset.offset);
-                            const nextProducts = categoryProducts.slice(offset, offset + 9);
+                            const visible = parseInt(this.dataset.visible);
+                            const nextProducts = categoryProducts.slice(offset, offset + 3);
                             
                             nextProducts.forEach(product => {
                                 productsGrid.appendChild(createProductCard(product));
                             });
                             
-                            this.dataset.offset = offset + 9;
+                            this.dataset.offset = offset + 3;
+                            this.dataset.visible = visible + 3;
                             
-                            if (offset + 9 >= categoryProducts.length) {
+                            if (offset + 3 >= categoryProducts.length) {
                                 this.style.display = 'none';
                             }
                         });
@@ -828,7 +867,7 @@
                     }
                     
                     categoriesContainer.appendChild(categorySection);
-                }
+                });
             }
 
             function createProductCard(product) {
@@ -856,7 +895,10 @@
                         ${product.prescriptionRequired ? '<span class="prescription-badge">Rx</span>' : ''}
                         <div class="add-to-cart-container">
                             <input type="number" class="quantity-input" min="1" value="1" placeholder="Qty">
-                            <button class="add-to-cart-btn">Add</button>
+                            <button class="add-to-cart-btn">
+                                <span class="btn-text">Add</span>
+                                <span class="spinner"></span>
+                            </button>
                         </div>
                     </div>
                 `;
@@ -875,16 +917,31 @@
                     }
                     
                     try {
+                        // Disable button and show spinner
+                        addToCartBtn.disabled = true;
+                        addToCartBtn.classList.add('loading');
+                        
                         await addToCart(product, quantity);
                         await updateCartCount();
-                        alert(`${quantity} ${product.productName} added to cart`);
+                        
+                        // Show notification without domain prefix
+                        showNotification(`${quantity} ${product.productName} added to cart`);
                     } catch (error) {
                         console.error('Error adding to cart:', error);
-                        alert('Failed to add to cart. Please try again.');
+                        showNotification('Failed to add to cart. Please try again.');
+                    } finally {
+                        // Re-enable button and hide spinner
+                        addToCartBtn.disabled = false;
+                        addToCartBtn.classList.remove('loading');
                     }
                 });
                 
                 return card;
+            }
+
+            function showNotification(message) {
+                // This will show a simple alert without the domain prefix in FlutterFlow WebView
+                alert(message);
             }
 
             async function addToCart(product, quantity) {
