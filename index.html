@@ -317,25 +317,6 @@
             background: #2a6bc4;
         }
 
-        .see-more-btn {
-            display: block;
-            width: 100%;
-            padding: 8px;
-            margin-top: 10px;
-            background: var(--accent);
-            border: none;
-            border-radius: var(--radius);
-            color: var(--primary);
-            font-weight: 500;
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .see-more-btn:active {
-            background: #d6d9df;
-        }
-
         .slider-controls {
             display: flex;
             justify-content: center;
@@ -896,9 +877,8 @@
                     productsSlider.className = 'products-slider';
                     productsSlider.dataset.category = category;
                     
-                    // Display first 2 products by default
-                    const visibleProducts = categoryProducts.slice(0, 2);
-                    visibleProducts.forEach(product => {
+                    // Add all products to the slider (not just first 2)
+                    categoryProducts.forEach(product => {
                         productsSlider.appendChild(createProductCard(product));
                     });
                     
@@ -936,52 +916,6 @@
                         setupSwipeEvents(productsSlider, category, categoryProducts.length);
                     }
                     
-                    // Add "See More" button if there are more products
-                    if (categoryProducts.length > 2) {
-                        const seeMoreBtn = document.createElement('button');
-                        seeMoreBtn.className = 'see-more-btn';
-                        seeMoreBtn.textContent = 'See More';
-                        seeMoreBtn.dataset.category = category;
-                        seeMoreBtn.dataset.offset = 2;
-                        seeMoreBtn.dataset.visible = 2;
-                        
-                        seeMoreBtn.addEventListener('click', function() {
-                            const offset = parseInt(this.dataset.offset);
-                            const visible = parseInt(this.dataset.visible);
-                            const nextProducts = categoryProducts.slice(offset, offset + 2);
-                            
-                            // Add new products to slider
-                            const slider = this.closest('.category-section').querySelector('.products-slider');
-                            nextProducts.forEach(product => {
-                                slider.appendChild(createProductCard(product));
-                            });
-                            
-                            // Update dots if needed
-                            const newSlideCount = Math.ceil((offset + 2) / 2);
-                            const controls = this.closest('.category-section').querySelector('.slider-controls');
-                            if (controls && newSlideCount > controls.children.length) {
-                                const dot = document.createElement('div');
-                                dot.className = 'slider-dot';
-                                dot.dataset.slide = controls.children.length;
-                                dot.dataset.category = category;
-                                dot.addEventListener('click', () => {
-                                    goToSlide(category, controls.children.length);
-                                });
-                                controls.appendChild(dot);
-                            }
-                            
-                            this.dataset.offset = offset + 2;
-                            this.dataset.visible = visible + 2;
-                            
-                            // Hide button if we've shown all products
-                            if (offset + 2 >= categoryProducts.length) {
-                                this.style.display = 'none';
-                            }
-                        });
-                        
-                        categorySection.appendChild(seeMoreBtn);
-                    }
-                    
                     categoriesContainer.appendChild(categorySection);
                 });
             }
@@ -991,6 +925,9 @@
                 if (autoScrollIntervals[category]) {
                     clearInterval(autoScrollIntervals[category]);
                 }
+                
+                // Only set up auto-scroll if there are more than 2 products
+                if (productCount <= 2) return;
                 
                 // Calculate number of slides
                 const slideCount = Math.ceil(productCount / 2);
@@ -1023,11 +960,15 @@
                     });
                     
                     // Reset auto-scroll timer for this category
-                    setupAutoScroll(category, slider.children.length);
+                    const productCount = slider.children.length;
+                    setupAutoScroll(category, productCount);
                 }
             }
 
             function setupSwipeEvents(slider, category, productCount) {
+                // Only set up swipe if there are more than 2 products
+                if (productCount <= 2) return;
+                
                 let touchStartX = 0;
                 let touchEndX = 0;
                 const slideCount = Math.ceil(productCount / 2);
@@ -1035,11 +976,17 @@
                 
                 slider.addEventListener('touchstart', (e) => {
                     touchStartX = e.changedTouches[0].screenX;
+                    // Pause auto-scroll when user interacts
+                    if (autoScrollIntervals[category]) {
+                        clearInterval(autoScrollIntervals[category]);
+                    }
                 }, {passive: true});
                 
                 slider.addEventListener('touchend', (e) => {
                     touchEndX = e.changedTouches[0].screenX;
                     handleSwipe();
+                    // Resume auto-scroll after user interaction
+                    setupAutoScroll(category, productCount);
                 }, {passive: true});
                 
                 function handleSwipe() {
