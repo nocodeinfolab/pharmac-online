@@ -944,7 +944,7 @@
                 const toast = document.createElement('div');
                 toast.textContent = message;
                 toast.style.position = 'fixed';
-                toast.style.bottom = '80px';
+                toast.style.top = '60px'; // just under the header
                 toast.style.left = '50%';
                 toast.style.transform = 'translateX(-50%)';
                 toast.style.background = '#3a7bd5';
@@ -965,6 +965,7 @@
                     setTimeout(() => toast.remove(), 500);
                 }, 3000);
             }
+
 
             async function addToCart(product, quantity) {
                 if (!userEmail) {
