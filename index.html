@@ -755,19 +755,35 @@
             async function initApp() {
                 console.log("Initializing pharmacy app...");
                 userEmail = getEmailFromURL();
+
                 if (!userEmail) {
-                    showError("No email parameter found in URL. Please access this page with a valid email.");
-                    return;
+                    console.warn("No email parameter found — user not logged in");
+
+                    // Show a top warning banner but allow the app to continue
+                    const warningBanner = document.createElement("div");
+                    warningBanner.textContent = "🔒 Not logged in — some features may be disabled.";
+                    warningBanner.style.background = "#fce8e6";
+                    warningBanner.style.color = "#d93025";
+                    warningBanner.style.padding = "10px";
+                    warningBanner.style.textAlign = "center";
+                    warningBanner.style.fontSize = "0.85rem";
+                    warningBanner.style.fontWeight = "500";
+                    warningBanner.style.position = "sticky";
+                    warningBanner.style.top = "0";
+                    warningBanner.style.zIndex = "1001";
+
+                    // Insert banner before everything else in the body
+                    document.body.insertBefore(warningBanner, document.body.firstChild);
+                } else {
+                    console.log("User email:", userEmail);
+                    await updateCartCount();
                 }
-                console.log("User email:", userEmail);
-                
-                // Update cart count immediately
-                await updateCartCount();
-                
-                // Then fetch products
+
+                // Always fetch products and set up service worker
                 await fetchProducts();
                 setupServiceWorker();
             }
+
 
             async function fetchProducts() {
                 try {
