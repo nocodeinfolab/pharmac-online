@@ -690,6 +690,104 @@
             let cartDocRef = null;
             let autoScrollIntervals = {};
 
+            // Slide management functions
+            function goToSlide(category, slideIndex) {
+                const slider = document.querySelector(`.products-slider[data-category="${category}"]`);
+                const controls = slider?.closest('.category-section')?.querySelector('.slider-controls');
+                
+                if (slider) {
+                    // Calculate the translateX value based on slide index
+                    const translateX = -(slideIndex * 100);
+                    slider.style.transform = `translateX(${translateX}%)`;
+                    
+                    // Update active dot if controls exist
+                    if (controls) {
+                        const dots = controls.querySelectorAll('.slider-dot');
+                        dots.forEach((dot, index) => {
+                            if (index === slideIndex) {
+                                dot.classList.add('active');
+                            } else {
+                                dot.classList.remove('active');
+                            }
+                        });
+                    }
+                }
+            }
+
+            function setupAutoScroll(category, productCount) {
+                // Clear any existing interval for this category
+                if (autoScrollIntervals[category]) {
+                    clearInterval(autoScrollIntervals[category]);
+                }
+                
+                // Only set up auto-scroll if there are more than 2 products
+                if (productCount <= 2) return;
+                
+                // Calculate number of slides
+                const slideCount = Math.ceil(productCount / 2);
+                let currentSlide = 0;
+                
+                // Initialize the first slide
+                goToSlide(category, currentSlide);
+                
+                // Set up auto-scroll interval (every 3 seconds)
+                autoScrollIntervals[category] = setInterval(() => {
+                    currentSlide = (currentSlide + 1) % slideCount;
+                    goToSlide(category, currentSlide);
+                }, 3000);
+            }
+
+            function setupSwipeEvents(slider, category, productCount) {
+                // Only set up swipe if there are more than 2 products
+                if (productCount <= 2) return;
+                
+                let touchStartX = 0;
+                let touchEndX = 0;
+                let isSwiping = false;
+                const slideCount = Math.ceil(productCount / 2);
+                let currentSlide = 0;
+                
+                slider.addEventListener('touchstart', (e) => {
+                    touchStartX = e.changedTouches[0].screenX;
+                    isSwiping = true;
+                    // Pause auto-scroll when user interacts
+                    if (autoScrollIntervals[category]) {
+                        clearInterval(autoScrollIntervals[category]);
+                    }
+                }, {passive: true});
+                
+                slider.addEventListener('touchmove', (e) => {
+                    isSwiping = true;
+                }, {passive: true});
+                
+                slider.addEventListener('touchend', (e) => {
+                    if (!isSwiping) return;
+                    
+                    touchEndX = e.changedTouches[0].screenX;
+                    handleSwipe();
+                    isSwiping = false;
+                    
+                    // Resume auto-scroll after a brief pause (1 second after interaction)
+                    setTimeout(() => {
+                        setupAutoScroll(category, productCount);
+                    }, 1000);
+                }, {passive: true});
+                
+                function handleSwipe() {
+                    const threshold = 50; // Minimum swipe distance to trigger slide change
+                    
+                    if (touchEndX < touchStartX - threshold) {
+                        // Swipe left - next slide
+                        currentSlide = (currentSlide + 1) % slideCount;
+                        goToSlide(category, currentSlide);
+                    } else if (touchEndX > touchStartX + threshold) {
+                        // Swipe right - previous slide
+                        currentSlide = (currentSlide - 1 + slideCount) % slideCount;
+                        goToSlide(category, currentSlide);
+                    }
+                }
+            }
+
             // Get email parameter from URL
             function getEmailFromURL() {
                 const urlParams = new URLSearchParams(window.location.search);
@@ -877,7 +975,7 @@
                     productsSlider.className = 'products-slider';
                     productsSlider.dataset.category = category;
                     
-                    // Add all products to the slider (not just first 2)
+                    // Add all products to the slider
                     categoryProducts.forEach(product => {
                         productsSlider.appendChild(createProductCard(product));
                     });
@@ -918,77 +1016,6 @@
                     
                     categoriesContainer.appendChild(categorySection);
                 });
-            }
-
-            function setupAutoScroll(category, productCount) {
-                // Clear any existing interval for this category
-                if (autoScrollIntervals[category]) {
-                    clearInterval(autoScrollIntervals[category]);
-                }
-                
-                // Only set up auto-scroll if there are more than 2 products
-                if (productCount <= 2) return;
-                
-                // Calculate number of slides
-                const slideCount = Math.ceil(productCount / 2);
-                let currentSlide = 0;
-                
-                // Set up auto-scroll interval (every 3 seconds)
-                autoScrollIntervals[category] = setInterval(() => {
-                    currentSlide = (currentSlide + 1) % slideCount;
-                    goToSlide(category, currentSlide);
-                }, 3000);
-            }
-
-            function setupSwipeEvents(slider, category, productCount) {
-                // Only set up swipe if there are more than 2 products
-                if (productCount <= 2) return;
-                
-                let touchStartX = 0;
-                let touchEndX = 0;
-                let isSwiping = false;
-                const slideCount = Math.ceil(productCount / 2);
-                let currentSlide = 0;
-                
-                slider.addEventListener('touchstart', (e) => {
-                    touchStartX = e.changedTouches[0].screenX;
-                    isSwiping = true;
-                    // Pause auto-scroll when user interacts
-                    if (autoScrollIntervals[category]) {
-                        clearInterval(autoScrollIntervals[category]);
-                    }
-                }, {passive: true});
-                
-                slider.addEventListener('touchmove', (e) => {
-                    isSwiping = true;
-                }, {passive: true});
-                
-                slider.addEventListener('touchend', (e) => {
-                    if (!isSwiping) return;
-                    
-                    touchEndX = e.changedTouches[0].screenX;
-                    handleSwipe();
-                    isSwiping = false;
-                    
-                    // Resume auto-scroll after a brief pause (1 second after interaction)
-                    setTimeout(() => {
-                        setupAutoScroll(category, productCount);
-                    }, 1000);
-                }, {passive: true});
-                
-                function handleSwipe() {
-                    const threshold = 50; // Minimum swipe distance to trigger slide change
-                    
-                    if (touchEndX < touchStartX - threshold) {
-                        // Swipe left - next slide
-                        currentSlide = (currentSlide + 1) % slideCount;
-                        goToSlide(category, currentSlide);
-                    } else if (touchEndX > touchStartX + threshold) {
-                        // Swipe right - previous slide
-                        currentSlide = (currentSlide - 1 + slideCount) % slideCount;
-                        goToSlide(category, currentSlide);
-                    }
-                }
             }
 
             function createProductCard(product) {
