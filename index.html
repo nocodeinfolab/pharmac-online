@@ -216,10 +216,12 @@
             overflow: hidden;
             box-shadow: var(--shadow);
             transition: var(--transition);
-            min-width: calc(50% - 8px);
-            flex: 0 0 calc(50% - 8px);
-            margin: 0;
+            min-width: calc(100% - 8px) !important;
+            flex: 0 0 calc(100% - 8px) !important;
+            margin: 0 auto 15px auto !important;
             border: 1px solid rgba(67, 97, 238, 0.1);
+            width: 100%;
+            max-width: 400px; /* Adjust this value as needed */
         }
 
         .product-card:hover {
@@ -233,7 +235,7 @@
 
         .product-image {
             width: 100%;
-            height: 140px;
+            height: 160px !important; /* Increased from 140px */
             object-fit: contain;
             background: var(--light-bg);
             padding: 10px;
@@ -241,7 +243,7 @@
         }
 
         .product-info {
-            padding: 12px;
+            padding: 15px !important;
         }
 
         .product-name {
@@ -1348,8 +1350,10 @@
                         <h3 class="product-name">${product.productName}</h3>
                         <p class="product-brand">${product.brandName || 'Generic'}</p>
                         <p class="product-price">${formattedPrice}</p>
-                        <span class="product-stock">In Stock</span>
-                        ${product.prescriptionRequired ? '<span class="prescription-badge">Rx Required</span>' : ''}
+                        <div class="stock-container" style="display: flex; gap: 8px; margin-bottom: 8px;">
+                            <span class="product-stock">In Stock</span>
+                            ${product.prescriptionRequired ? '<span class="prescription-badge">Rx Required</span>' : ''}
+                        </div>
                         <div class="add-to-cart-container">
                             <input type="number" class="quantity-input" min="1" value="1" placeholder="Qty">
                             <button class="add-to-cart-btn">
