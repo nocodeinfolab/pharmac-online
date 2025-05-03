@@ -940,53 +940,40 @@
                 }, 3000);
             }
 
-            function goToSlide(category, slideIndex) {
-                const slider = document.querySelector(`.products-slider[data-category="${category}"]`);
-                const controls = slider.closest('.category-section').querySelector('.slider-controls');
-                
-                if (slider && controls) {
-                    // Calculate the translateX value based on slide index
-                    const translateX = -(slideIndex * 100);
-                    slider.style.transform = `translateX(${translateX}%)`;
-                    
-                    // Update active dot
-                    const dots = controls.querySelectorAll('.slider-dot');
-                    dots.forEach((dot, index) => {
-                        if (index === slideIndex) {
-                            dot.classList.add('active');
-                        } else {
-                            dot.classList.remove('active');
-                        }
-                    });
-                    
-                    // Reset auto-scroll timer for this category
-                    const productCount = slider.children.length;
-                    setupAutoScroll(category, productCount);
-                }
-            }
-
             function setupSwipeEvents(slider, category, productCount) {
                 // Only set up swipe if there are more than 2 products
                 if (productCount <= 2) return;
                 
                 let touchStartX = 0;
                 let touchEndX = 0;
+                let isSwiping = false;
                 const slideCount = Math.ceil(productCount / 2);
                 let currentSlide = 0;
                 
                 slider.addEventListener('touchstart', (e) => {
                     touchStartX = e.changedTouches[0].screenX;
+                    isSwiping = true;
                     // Pause auto-scroll when user interacts
                     if (autoScrollIntervals[category]) {
                         clearInterval(autoScrollIntervals[category]);
                     }
                 }, {passive: true});
                 
+                slider.addEventListener('touchmove', (e) => {
+                    isSwiping = true;
+                }, {passive: true});
+                
                 slider.addEventListener('touchend', (e) => {
+                    if (!isSwiping) return;
+                    
                     touchEndX = e.changedTouches[0].screenX;
                     handleSwipe();
-                    // Resume auto-scroll after user interaction
-                    setupAutoScroll(category, productCount);
+                    isSwiping = false;
+                    
+                    // Resume auto-scroll after a brief pause (1 second after interaction)
+                    setTimeout(() => {
+                        setupAutoScroll(category, productCount);
+                    }, 1000);
                 }, {passive: true});
                 
                 function handleSwipe() {
@@ -994,11 +981,11 @@
                     
                     if (touchEndX < touchStartX - threshold) {
                         // Swipe left - next slide
-                        currentSlide = Math.min(currentSlide + 1, slideCount - 1);
+                        currentSlide = (currentSlide + 1) % slideCount;
                         goToSlide(category, currentSlide);
                     } else if (touchEndX > touchStartX + threshold) {
                         // Swipe right - previous slide
-                        currentSlide = Math.max(currentSlide - 1, 0);
+                        currentSlide = (currentSlide - 1 + slideCount) % slideCount;
                         goToSlide(category, currentSlide);
                     }
                 }
