@@ -553,17 +553,20 @@
             display: inline-block;
         }
 
-        /* Hide scrollbars for WebKit-based browsers (Chrome, Safari) */
-        body::-webkit-scrollbar {
-            display: none;
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
         }
 
-        /* Hide scrollbars for all browsers (modern) */
-        body {
-            -ms-overflow-style: none;  /* IE 10+ */
-            scrollbar-width: none; /* Firefox */
-            overflow-y: auto;
+        ::-webkit-scrollbar-thumb {
+            background-color: rgba(0,0,0,0.2);
+            border-radius: 2px;
         }
+
+        ::-webkit-scrollbar-track {
+            background-color: transparent;
+        }
+
 
     </style>
 </head>
