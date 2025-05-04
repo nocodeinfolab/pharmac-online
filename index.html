@@ -211,17 +211,18 @@
         }
 
         .product-card {
+            min-width: calc(50% - 10px);
+            flex: 0 0 calc(50% - 10px);
             background: var(--white);
             border-radius: var(--radius);
             overflow: hidden;
             box-shadow: var(--shadow);
             transition: var(--transition);
-            min-width: calc(100% - 8px) !important;
-            flex: 0 0 calc(100% - 8px) !important;
-            margin: 0 auto 15px auto !important;
-            border: 1px solid rgba(67, 97, 238, 0.1);
-            width: 100%;
-            max-width: 400px; /* Adjust this value as needed */
+            margin: 0;
+            border: 1px solid #e0e0e0; /* Added border */
+            display: flex;
+            flex-direction: column;
+            height: 320px; /* Fixed card height */
         }
 
         .product-card:hover {
@@ -235,40 +236,32 @@
 
         .product-image {
             width: 100%;
-            height: 160px !important; /* Increased from 140px */
-            object-fit: contain;
+            height: 180px; /* Increased image height */
+            object-fit: cover; /* Fill width while maintaining aspect ratio */
             background: var(--light-bg);
-            padding: 10px;
-            image-rendering: -webkit-optimize-contrast;
+            padding: 0; /* Remove padding to maximize space */
         }
 
         .product-info {
-            padding: 15px !important;
+            padding: 10px 12px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
         }
 
         .product-name {
-            font-size: 0.95rem;
-            font-weight: 500;
-            margin-bottom: 6px;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            min-height: 2.4em;
-            color: var(--text);
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+            min-height: 2.2em;
         }
 
         .product-brand {
-            font-size: 0.8rem;
-            color: var(--light-text);
+            font-size: 0.75rem;
             margin-bottom: 8px;
-            font-weight: 400;
         }
 
         .product-price {
-            font-size: 1rem;
-            font-weight: 700;
-            color: var(--primary);
+            font-size: 0.95rem;
             margin-bottom: 8px;
         }
 
@@ -292,6 +285,13 @@
             margin-left: 5px;
             font-weight: 500;
         }
+
+        .stock-badge-container {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
 
         .add-to-cart-container {
             display: flex;
@@ -1329,28 +1329,26 @@
                 });
             }
 
+            // Modified createProductCard function
             function createProductCard(product) {
                 const card = document.createElement('div');
                 card.className = 'product-card';
                 card.dataset.id = product.id;
-                card.dataset.name = product.productName.toLowerCase();
-                card.dataset.tags = product.tags.join(',').toLowerCase();
                 
-                // Format price as Naira
                 const formattedPrice = product.price ? 
                     `₦${product.price.toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2})}` : 
                     '₦0.00';
                 
                 card.innerHTML = `
-                    <img src="${product.imageUrl || 'https://via.placeholder.com/150?text=No+Image'}" 
+                    <img src="${product.imageUrl || 'https://via.placeholder.com/300x180?text=No+Image'}" 
                          alt="${product.productName}" 
                          class="product-image"
-                         onerror="this.src='https://via.placeholder.com/150?text=Image+Error'">
+                         onerror="this.src='https://via.placeholder.com/300x180?text=Image+Error'">
                     <div class="product-info">
                         <h3 class="product-name">${product.productName}</h3>
                         <p class="product-brand">${product.brandName || 'Generic'}</p>
                         <p class="product-price">${formattedPrice}</p>
-                        <div class="stock-container" style="display: flex; gap: 8px; margin-bottom: 8px;">
+                        <div class="stock-badge-container">
                             <span class="product-stock">In Stock</span>
                             ${product.prescriptionRequired ? '<span class="prescription-badge">Rx Required</span>' : ''}
                         </div>
