@@ -247,7 +247,7 @@
 
         .product-name {
             font-size: 0.9rem;
-            margin-bottom: 3px;
+            margin-bottom: 6px;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
@@ -259,11 +259,10 @@
         .product-brand {
             font-size: 0.75rem;
             color: var(--light-text);
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            margin-top: 0;
         }
 
         .product-price {
@@ -280,8 +279,8 @@
         }
 
         .product-stock, .prescription-badge {
-            font-size: 0.5rem; /* Smaller font */
-            padding: 2px 4px; /* Reduced padding */
+            font-size: 0.7rem; /* Smaller font */
+            padding: 3px 6px; /* Reduced padding */
             border-radius: 4px;
             display: inline-block;
             font-weight: 500;
@@ -290,6 +289,11 @@
         .product-stock {
             background: var(--success);
             color: var(--white);
+        }
+
+        .products-wrapper {
+            min-height: 380px; /* Ensures space for cards + overflow */
+            position: relative;
         }
 
         .prescription-badge {
@@ -326,7 +330,7 @@
             color: var(--white);
             border: none;
             border-radius: var(--radius);
-            padding: 8px 10px;
+            padding: 8px 12px;
             font-size: 0.85rem;
             cursor: pointer;
             transition: var(--transition);
@@ -1273,9 +1277,12 @@
                 // Display each category
                 categoriesContainer.innerHTML = '';
                 sortedCategories.forEach(category => {
-                    const categoryProducts = categories[category];
                     const categorySection = document.createElement('div');
                     categorySection.className = 'category-section';
+                    
+                    // Add wrapper div for better spacing control
+                    const productsWrapper = document.createElement('div');
+                    productsWrapper.className = 'products-wrapper';
                     
                     const categoryHeader = document.createElement('div');
                     categoryHeader.className = 'category-header';
@@ -1330,6 +1337,9 @@
                         setupSwipeEvents(productsSlider, category, categoryProducts.length);
                     }
                     
+                    productsWrapper.appendChild(productsContainer);
+                    categorySection.appendChild(categoryHeader);
+                    categorySection.appendChild(productsWrapper); // Changed from productsContainer
                     categoriesContainer.appendChild(categorySection);
                 });
             }
