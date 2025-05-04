@@ -201,6 +201,10 @@
             position: relative;
             overflow: hidden;
             width: 100%;
+            min-width: calc(50% - 10px);
+            flex: 0 0 calc(50% - 10px);
+            height: 340px; /* Increased from 320px */
+            /
         }
 
         .products-slider {
@@ -219,31 +223,21 @@
             box-shadow: var(--shadow);
             transition: var(--transition);
             margin: 0;
-            border: 1px solid #e0e0e0; /* Added border */
+            border: 1px solid #e0e0e0;
             display: flex;
             flex-direction: column;
-            height: 320px; /* Fixed card height */
-        }
-
-        .product-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(67, 97, 238, 0.15);
-        }
-
-        .product-card:active {
-            transform: scale(0.98);
+            height: 360px; /* Increased height */
         }
 
         .product-image {
             width: 100%;
-            height: 180px; /* Increased image height */
-            object-fit: cover; /* Fill width while maintaining aspect ratio */
+            height: 200px; /* Increased image height */
+            object-fit: cover;
             background: var(--light-bg);
-            padding: 0; /* Remove padding to maximize space */
         }
 
         .product-info {
-            padding: 10px 12px;
+            padding: 10px;
             flex-grow: 1;
             display: flex;
             flex-direction: column;
@@ -251,52 +245,60 @@
 
         .product-name {
             font-size: 0.9rem;
-            margin-bottom: 5px;
-            min-height: 2.2em;
+            margin-bottom: 6px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            min-height: 2.4em;
+            line-height: 1.2;
         }
 
         .product-brand {
             font-size: 0.75rem;
+            color: var(--light-text);
             margin-bottom: 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .product-price {
             font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--primary);
             margin-bottom: 8px;
-        }
-
-        .product-stock {
-            font-size: 0.6rem;
-            padding: 2px 6px;
-            border-radius: 4px;
-            background: var(--success);
-            color: var(--white);
-            display: inline-block;
-            font-weight: 500;
-        }
-
-        .prescription-badge {
-            font-size: 0.6rem;
-            padding: 2px 4px;
-            border-radius: 4px;
-            background: var(--warning);
-            color: var(--white);
-            display: inline-block;
-            margin-left: 5px;
-            font-weight: 500;
         }
 
         .stock-badge-container {
             display: flex;
-            gap: 8px;
-            margin-bottom: 5px;
+            gap: 6px;
+            margin-bottom: 8px;
         }
 
+        .product-stock, .prescription-badge {
+            font-size: 0.7rem; /* Smaller font */
+            padding: 3px 6px; /* Reduced padding */
+            border-radius: 4px;
+            display: inline-block;
+            font-weight: 500;
+        }
+
+        .product-stock {
+            background: var(--success);
+            color: var(--white);
+        }
+
+        .prescription-badge {
+            background: var(--warning);
+            color: var(--white);
+        }
 
         .add-to-cart-container {
             display: flex;
-            margin-top: 12px;
+            margin-top: auto; /* Pushes to bottom */
             gap: 8px;
+            padding-top: 8px;
         }
 
         .quantity-input {
