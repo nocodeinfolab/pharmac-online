@@ -204,7 +204,7 @@
             width: 100%;
             min-width: calc(50% - 10px);
             flex: 0 0 calc(50% - 10px);
-            height: 340px; /* Increased from 320px */
+            height: auto; /* Increased from 320px */
             margin-bottom: 15px;
         }
 
@@ -227,7 +227,7 @@
             border: 1px solid blue;
             display: flex;
             flex-direction: column;
-            height: 350px; /* Increased height */
+            height: auto; /* Increased height */
             margin-bottom: 15px;
         }
 
@@ -988,6 +988,8 @@
             const accountFormContainer = document.getElementById('account-form');
             const notification = document.getElementById('notification');
             let currentSearchType = 'name';
+            let enableAutoScroll = false;
+
 
             // Global variables
             let allProducts = [];
@@ -1021,27 +1023,31 @@
             }
 
             function setupAutoScroll(category, productCount) {
-                // Clear any existing interval for this category
+                if (!enableAutoScroll) {
+                    if (autoScrollIntervals[category]) {
+                        clearInterval(autoScrollIntervals[category]);
+                    }
+                    return;
+                }
+
+                // existing code remains
                 if (autoScrollIntervals[category]) {
                     clearInterval(autoScrollIntervals[category]);
                 }
                 
-                // Only set up auto-scroll if there are more than 2 products
                 if (productCount <= 2) return;
                 
-                // Calculate number of slides
                 const slideCount = Math.ceil(productCount / 2);
                 let currentSlide = 0;
-                
-                // Initialize the first slide
+
                 goToSlide(category, currentSlide);
-                
-                // Set up auto-scroll interval (every 3 seconds)
+
                 autoScrollIntervals[category] = setInterval(() => {
                     currentSlide = (currentSlide + 1) % slideCount;
                     goToSlide(category, currentSlide);
                 }, 3000);
             }
+
 
             function setupSwipeEvents(slider, category, productCount) {
                 // Only set up swipe if there are more than 2 products
@@ -1144,6 +1150,12 @@
             searchButton.addEventListener('click', handleSearch);
             searchInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') handleSearch();
+            });
+            // NEW: automatically refresh when input is cleared
+            searchInput.addEventListener('input', () => {
+                if (!searchInput.value.trim()) {
+                    displayProductsByCategory(allProducts);
+                }
             });
 
             searchTabs.forEach(tab => {
