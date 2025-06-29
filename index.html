@@ -1053,30 +1053,49 @@
                 if (productCount <= 2) return;
 
                 let touchStartX = 0;
+                let touchStartY = 0;
                 let touchEndX = 0;
                 let isSwiping = false;
                 const slideCount = Math.ceil(productCount / 2);
                 let currentSlide = 0;
+                let isHorizontalSwipe = false;
 
                 slider.addEventListener('touchstart', (e) => {
-                    e.preventDefault();
                     touchStartX = e.changedTouches[0].screenX;
+                    touchStartY = e.changedTouches[0].screenY;
                     isSwiping = true;
+                    isHorizontalSwipe = false;
                     if (autoScrollIntervals[category]) {
                         clearInterval(autoScrollIntervals[category]);
                     }
                 }, { passive: false });
 
                 slider.addEventListener('touchmove', (e) => {
-                    e.preventDefault();
-                    isSwiping = true;
+                    if (!isSwiping) return;
+
+                    const currentX = e.changedTouches[0].screenX;
+                    const currentY = e.changedTouches[0].screenY;
+                    const deltaX = currentX - touchStartX;
+                    const deltaY = currentY - touchStartY;
+
+                    // Check if it's horizontal
+                    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                        isHorizontalSwipe = true;
+                        e.preventDefault(); // block scroll
+                    } else {
+                        isHorizontalSwipe = false;
+                        // allow vertical scroll — do NOT call preventDefault
+                    }
                 }, { passive: false });
 
                 slider.addEventListener('touchend', (e) => {
                     if (!isSwiping) return;
 
-                    touchEndX = e.changedTouches[0].screenX;
-                    handleSwipe();
+                    if (isHorizontalSwipe) {
+                        touchEndX = e.changedTouches[0].screenX;
+                        handleSwipe();
+                    }
+
                     isSwiping = false;
 
                     setTimeout(() => {
@@ -1096,6 +1115,7 @@
                     }
                 }
             }
+
 
 
             // Get email parameter from URL
