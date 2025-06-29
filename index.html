@@ -1050,55 +1050,53 @@
 
 
             function setupSwipeEvents(slider, category, productCount) {
-                // Only set up swipe if there are more than 2 products
                 if (productCount <= 2) return;
-                
+
                 let touchStartX = 0;
                 let touchEndX = 0;
                 let isSwiping = false;
                 const slideCount = Math.ceil(productCount / 2);
                 let currentSlide = 0;
-                
+
                 slider.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
                     touchStartX = e.changedTouches[0].screenX;
                     isSwiping = true;
-                    // Pause auto-scroll when user interacts
                     if (autoScrollIntervals[category]) {
                         clearInterval(autoScrollIntervals[category]);
                     }
-                }, {passive: true});
-                
+                }, { passive: false });
+
                 slider.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
                     isSwiping = true;
-                }, {passive: true});
-                
+                }, { passive: false });
+
                 slider.addEventListener('touchend', (e) => {
                     if (!isSwiping) return;
-                    
+
                     touchEndX = e.changedTouches[0].screenX;
                     handleSwipe();
                     isSwiping = false;
-                    
-                    // Resume auto-scroll after a brief pause (1 second after interaction)
+
                     setTimeout(() => {
                         setupAutoScroll(category, productCount);
                     }, 1000);
-                }, {passive: true});
-                
+                }, { passive: false });
+
                 function handleSwipe() {
-                    const threshold = 50; // Minimum swipe distance to trigger slide change
-                    
+                    const threshold = 50;
+
                     if (touchEndX < touchStartX - threshold) {
-                        // Swipe left - next slide
                         currentSlide = (currentSlide + 1) % slideCount;
                         goToSlide(category, currentSlide);
                     } else if (touchEndX > touchStartX + threshold) {
-                        // Swipe right - previous slide
                         currentSlide = (currentSlide - 1 + slideCount) % slideCount;
                         goToSlide(category, currentSlide);
                     }
                 }
             }
+
 
             // Get email parameter from URL
             function getEmailFromURL() {
@@ -1335,8 +1333,7 @@
                         
                         categorySection.appendChild(sliderControls);
                         
-                        // Set up auto-scrolling for this category
-                        setupAutoScroll(category, categoryProducts.length);
+                        
                         
                         // Set up touch/swipe events
                         setupSwipeEvents(productsSlider, category, categoryProducts.length);
@@ -1843,7 +1840,7 @@
                         categorySection.appendChild(sliderControls);
                         
                         // Set up auto-scrolling for this category
-                        setupAutoScroll(`prescription-${category}`, categoryProducts.length);
+                        
                         
                         // Set up touch/swipe events
                         setupSwipeEvents(productsSlider, `prescription-${category}`, categoryProducts.length);
