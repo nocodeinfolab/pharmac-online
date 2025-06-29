@@ -44,6 +44,11 @@
             image-rendering: -webkit-optimize-contrast;
             text-rendering: optimizeLegibility;
         }
+        html, body {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
 
         header {
             background: linear-gradient(135deg, var(--primary), var(--secondary));
@@ -200,7 +205,9 @@
 
         .products-container {
             position: relative;
-            overflow: visible;
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
             width: 100%;
             min-width: calc(50% - 10px);
             flex: 0 0 calc(50% - 10px);
@@ -213,6 +220,7 @@
             transition: transform 0.5s ease;
             width: 100%;
             gap: 15px;
+            max-width: 100%;
         }
 
         .product-card {
