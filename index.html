@@ -1445,8 +1445,11 @@
                 }
                 
                 // Check if cart document exists for this user
+                const currentUser = firebase.auth().currentUser;
+                if (!currentUser) throw new Error("User not authenticated");
+
                 const cartQuery = await db.collection('Cart')
-                    .where('email_address', '==', userEmail)
+                    .where('owner_uid', '==', currentUser.uid)
                     .limit(1)
                     .get();
                 
@@ -1456,6 +1459,7 @@
                 if (cartQuery.empty) {
                     // Create new cart document
                     cartRef = await db.collection('Cart').add({
+                        owner_uid: currentUser.uid,
                         email_address: userEmail,
                         created_at: now,
                         updated_at: now
